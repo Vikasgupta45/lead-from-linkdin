@@ -13,7 +13,7 @@ export const Header: React.FC = () => {
           className="flex items-center gap-2 group focus:outline-none"
         >
           <span className="text-xl font-extrabold tracking-tight flex items-baseline gap-1.5">
-            <span className="text-red-600">sbl.so</span>
+            <span className="text-navy-900">sbl.so</span>
             <span className="text-sm font-bold text-brand-600">tools</span>
           </span>
         </a>
