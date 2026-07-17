@@ -12,8 +12,9 @@ export const Header: React.FC = () => {
           onClick={() => trackClick('header_logo')}
           className="flex items-center gap-2 group focus:outline-none"
         >
-          <span className="text-xl font-extrabold text-navy-900 tracking-tight flex items-center gap-1.5">
-            SBL<span className="text-brand-600">.so</span>
+          <span className="text-xl font-extrabold tracking-tight flex items-baseline gap-1.5">
+            <span className="text-red-600">sbl.so</span>
+            <span className="text-sm font-bold text-brand-600">tools</span>
           </span>
         </a>
 
