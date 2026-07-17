@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: leads-from-likes-web
+    runtime: node
+    buildCommand: npm run build
+    startCommand: npm run start
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: TRUST_PROXY_HOPS
+        value: 1 # Render sits behind a reverse proxy/load balancer which counts as 1 hop
+      - key: COOKIE_SECRET
+        generateValue: true # Render will generate a secure random 32-character string
+      - key: APIFY_API_TOKEN
+        sync: false # Requires manual entry in Render dashboard
+      - key: ADMIN_PASSWORD
+        sync: false # Requires manual entry in Render dashboard (must be >= 16 characters)
+      - key: ALLOWED_ORIGINS
+        sync: false # Requires manual entry of the production domain
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: leads-from-likes-redis
+          property: connectionString
+
+  - type: redis
+    name: leads-from-likes-redis
+    plan: free # Generates a free Redis instance (expires in 90 days). Upgrade to starter ($7/mo) or replace REDIS_URL with Upstash for permanent free tier.
+    maxmemoryPolicy: noeviction
