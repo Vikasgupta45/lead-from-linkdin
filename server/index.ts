@@ -76,6 +76,12 @@ app.use(cors({
 }));
 
 function clientIp(req: Request): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    const ipString = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+    const firstIp = ipString.split(',')[0]?.trim();
+    if (firstIp) return firstIp;
+  }
   return req.ip || req.socket.remoteAddress || 'unknown';
 }
 
