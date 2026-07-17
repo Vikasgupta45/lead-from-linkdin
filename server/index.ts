@@ -75,12 +75,27 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Visitor-Id'],
 }));
 
+// Never let a shared cache/CDN store per-visitor API responses (status, leads, jobs).
+app.use('/api', (_req, res, next) => {
+  res.set('Cache-Control', 'no-store, private');
+  res.set('Vary', 'X-Visitor-Id, Cookie, Origin');
+  next();
+});
+
+// Resolve the end-user IP from what the deployment platform itself guarantees.
+// req.ip is derived by Express from the RIGHTMOST proxy-appended x-forwarded-for
+// entry (per app.set('trust proxy', TRUST_PROXY_HOPS)), which clients cannot
+// spoof. Client-supplied headers like cf-connecting-ip / x-real-ip are NOT
+// trusted unless TRUSTED_IP_HEADER explicitly names one (set it ONLY when a
+// proxy in front, e.g. Cloudflare, strips and re-sets that header itself).
+const trustedIpHeader = (process.env.TRUSTED_IP_HEADER || '').toLowerCase();
+
 function clientIp(req: Request): string {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (forwarded) {
-    const ipString = Array.isArray(forwarded) ? forwarded[0] : forwarded;
-    const firstIp = ipString.split(',')[0]?.trim();
-    if (firstIp) return firstIp;
+  if (trustedIpHeader) {
+    const raw = req.headers[trustedIpHeader];
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    const first = value?.split(',')[0]?.trim();
+    if (first) return first;
   }
   return req.ip || req.socket.remoteAddress || 'unknown';
 }
@@ -326,10 +341,60 @@ app.post('/api/leads/track-click', async (req, res) => {
   catch (error: unknown) { Logger.error('Failed to track redirect click', { ip: clientIp(req), error: getErrorMessage(error) }); res.status(500).json({ success: false }); }
 });
 
+// Password-protected: report the caller's IP exactly as the server resolves it,
+// plus whether that IP currently holds a free-search block. This removes the
+// IPv4-vs-IPv6 guesswork when resetting usage from the /admin panel.
+app.get('/api/admin/whoami', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  const ip = clientIp(req);
+
+  try {
+    const adminRate = await UsageService.checkAdminLoginRateLimit(ip);
+    if (!adminRate.success) {
+      Logger.warn('Admin whoami rate limit exceeded', { ip });
+      res.status(429).json({ success: false, error: 'Too many attempts. Please try again later.' });
+      return;
+    }
+  } catch (error: unknown) {
+    Logger.error('Admin rate limit check failed', { ip, error: getErrorMessage(error) });
+    res.status(500).json({ success: false, error: 'Unable to process the request.' });
+    return;
+  }
+
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+  if (!isPasswordValid(token)) {
+    Logger.warn('Unauthorized admin whoami request', { ip });
+    res.status(401).json({ success: false, error: 'Unauthorized access.' });
+    return;
+  }
+
+  try {
+    const ipStatus = await redis.get(`ip_used:${ip}`);
+    res.json({ success: true, ip, ipBlocked: ipStatus === 'USED' });
+  } catch (error: unknown) {
+    Logger.error('Admin whoami lookup failed', { ip, error: getErrorMessage(error) });
+    res.status(500).json({ success: false, error: 'Unable to look up the IP status.' });
+  }
+});
+
 // Protected endpoint to unblock/reset an IP rate limit or visitor session status (directly authenticated via password)
 app.post('/api/admin/unblock', async (req, res) => {
   const authHeader = req.headers.authorization;
   const ip = clientIp(req);
+
+  // Throttle admin auth attempts per IP to block password brute-forcing.
+  try {
+    const adminRate = await UsageService.checkAdminLoginRateLimit(ip);
+    if (!adminRate.success) {
+      Logger.warn('Admin unblock rate limit exceeded', { ip });
+      res.status(429).json({ success: false, error: 'Too many attempts. Please try again later.' });
+      return;
+    }
+  } catch (error: unknown) {
+    Logger.error('Admin rate limit check failed', { ip, error: getErrorMessage(error) });
+    res.status(500).json({ success: false, error: 'Unable to process the request.' });
+    return;
+  }
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     Logger.warn('Unauthorized admin unblock request: missing token', { ip });

@@ -18,6 +18,7 @@ export const LeadResults: React.FC<LeadResultsProps> = ({ leads }) => {
     <div className="w-full max-w-5xl mx-auto px-4 mt-12 animate-fadeIn">
       {hasLeads ? (
         <>
+          <LeadExportActions leads={leads} />
           <div className="text-center mb-8">
             <h2 className="text-2xl font-black text-navy-900 tracking-tight">
               People Who Liked This Post
@@ -32,7 +33,6 @@ export const LeadResults: React.FC<LeadResultsProps> = ({ leads }) => {
               <LeadCard key={idx} lead={lead} />
             ))}
           </div>
-          <LeadExportActions leads={leads} />
         </>
       ) : (
         <div className="text-center py-12 bg-white rounded-2xl border border-navy-200 shadow-sm max-w-2xl mx-auto">

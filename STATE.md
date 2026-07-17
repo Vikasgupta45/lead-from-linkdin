@@ -20,6 +20,7 @@ React + Vite + Tailwind client
 - `services/postLikesService.ts` handles asynchronous polling of lead jobs from the backend.
 - `schemas/postLikesSchema.ts` performs client-side LinkedIn URL validation.
 - `utils/analytics.ts` records outbound SBL click events.
+- `components/AdminPanel.tsx` is a password-protected reset panel served at `/admin` (routed in `main.tsx`); it calls the admin whoami/unblock endpoints to clear IP or visitor blocks.
 
 ### Server (`server/`)
 
@@ -58,6 +59,7 @@ React + Vite + Tailwind client
 | `GET /api/leads/job/:jobId` | `GET` | Poll active scraper job run status and fetch results |
 | `POST /api/leads/export` | `POST` | Export results up to 50 items as CSV, PDF, or Word |
 | `POST /api/leads/track-click` | `POST` | Record outbound SBL link clicks |
+| `GET /api/admin/whoami` | `GET` | Bearer-token authorized: echoes the caller IP as the server resolves it plus its block status |
 | `POST /api/admin/unblock` | `POST` | Bearer-token authorized unblocking of an IP or resetting visitor state |
 
 ---
