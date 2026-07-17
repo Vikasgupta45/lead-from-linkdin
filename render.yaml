@@ -1,32 +1,34 @@
 services:
+  # Web service to run Express API and serve React SPA assets
   - type: web
-    name: leads-from-likes-web
-    runtime: node
-    buildCommand: npm install --include=dev && npm run build
+    name: sbl-leads-microsite
+    env: node
+    plan: starter
+    buildCommand: npm run build
     startCommand: npm run start
-    plan: free
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
-      - key: TRUST_PROXY_HOPS
-        value: 1 # Render sits behind a reverse proxy/load balancer which counts as 1 hop
+        value: 5001
       - key: COOKIE_SECRET
-        generateValue: true # Render will generate a secure random 32-character string
-      - key: APIFY_API_TOKEN
-        sync: false # Requires manual entry in Render dashboard
+        generateValue: true
       - key: ADMIN_PASSWORD
-        sync: false # Requires manual entry in Render dashboard (must be >= 16 characters)
+        sync: false # Set manually in Render Dashboard
+      - key: APIFY_API_TOKEN
+        sync: false # Set manually in Render Dashboard
       - key: ALLOWED_ORIGINS
-        sync: false # Requires manual entry of the production domain
+        sync: false # Set manually in Render Dashboard (e.g. https://sbl.so)
       - key: REDIS_URL
         fromService:
           type: keyvalue
-          name: leads-from-likes-redis
+          name: sbl-redis-cache
           property: connectionString
+      - key: TRUST_PROXY_HOPS
+        value: "1" # Trust 1 hop (Render's load balancer) for reading real client IPs
 
+  # Valkey (Redis-compatible) keyvalue cache store
   - type: keyvalue
-    name: leads-from-likes-redis
-    plan: free # Generates a free Key Value (Valkey/Redis) instance. Expires in 90 days.
-    ipAllowList: [] # Restrict access to only internal Render services for security
+    name: sbl-redis-cache
+    plan: free
+    ipAllowList: [] # Access restricted only to internal Render services for high security
