@@ -80,7 +80,7 @@ Do not place credential values in this file. The server reads:
 
 The application is deployed using a `render.yaml` Blueprint:
 - **Build & Start**: Build runs `npm run build` (which compiles React assets and Express TypeScript server files to `dist/`). Start command runs `npm run start` (starts compiled Node server).
-- **Auto-Provisioned Redis**: Configured via a Render Redis service linked to the Node web service using the internal connection string dynamic property (`REDIS_URL` = `fromService.property: connectionString`).
+- **Auto-Provisioned Key Value**: Configured via a Render Key Value (Valkey/Redis-compatible) service linked to the Node web service using the internal connection string dynamic property (`REDIS_URL` = `fromService.property: connectionString`).
 - **Proxy Hops**: `TRUST_PROXY_HOPS=1` ensures the rate limiters read client IPs correctly behind Render's load balancer.
 
 ---
