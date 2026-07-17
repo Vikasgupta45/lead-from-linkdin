@@ -74,6 +74,14 @@ Do not place credential values in this file. The server reads:
 - `ALLOWED_ORIGINS`
 - `IP_LIMIT_MAX`, `IP_LIMIT_WINDOW_SECS`
 - `VISITOR_LIMIT_MAX`, `VISITOR_LIMIT_WINDOW_SECS`
+- `TRUST_PROXY_HOPS` (Must be set to `1` behind Render's load balancer to read real client IPs)
+
+### Render Cloud Deployment Configuration
+
+The application is deployed using a `render.yaml` Blueprint:
+- **Build & Start**: Build runs `npm run build` (which compiles React assets and Express TypeScript server files to `dist/`). Start command runs `npm run start` (starts compiled Node server).
+- **Auto-Provisioned Redis**: Configured via a Render Redis service linked to the Node web service using the internal connection string dynamic property (`REDIS_URL` = `fromService.property: connectionString`).
+- **Proxy Hops**: `TRUST_PROXY_HOPS=1` ensures the rate limiters read client IPs correctly behind Render's load balancer.
 
 ---
 
