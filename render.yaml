@@ -29,3 +29,4 @@ services:
   - type: keyvalue
     name: leads-from-likes-redis
     plan: free # Generates a free Key Value (Valkey/Redis) instance. Expires in 90 days.
+    ipAllowList: [] # Restrict access to only internal Render services for security
