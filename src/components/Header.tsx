@@ -6,7 +6,7 @@ export const Header: React.FC = () => {
     <header className="w-full border-b border-navy-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <a
-          href="https://app.secondbrainlabs.com/"
+          href="https://app.secondbrainlabs.com/signup?utm_source=tools&utm_medium=leads+by+likes&utm_campaign=leads+by+likes"
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackClick('header_logo')}
@@ -18,7 +18,7 @@ export const Header: React.FC = () => {
         </a>
 
         <a
-          href="https://app.secondbrainlabs.com/"
+          href="https://app.secondbrainlabs.com/signup?utm_source=tools&utm_medium=leads+by+likes&utm_campaign=leads+by+likes"
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => trackClick('header_explore')}

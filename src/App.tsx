@@ -125,13 +125,13 @@ const App: React.FC = () => {
                 </div>
                 <div className="pt-2">
                   <a
-                    href="https://sbl.so"
+                    href="https://app.secondbrainlabs.com/signup?utm_source=tools&utm_medium=leads+by+likes&utm_campaign=leads+by+likes"
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => trackClick('upgrade_cta')}
                     className="inline-flex items-center justify-center px-7 py-3.5 text-sm font-extrabold rounded-xl text-brand-700 bg-white hover:bg-brand-50 active:bg-brand-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all shadow-md hover:shadow-lg group/btn"
                   >
-                    Unlock More Leads
+                    Unlock +300 More Leads
                     <svg className="ml-2 -mr-1 h-4 w-4 text-brand-700 group-hover/btn:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
@@ -170,7 +170,7 @@ const App: React.FC = () => {
           <p>© {new Date().getFullYear()} SBL.so. All rights reserved.</p>
           <p className="space-x-4">
             <a 
-              href="https://sbl.so" 
+              href="https://app.secondbrainlabs.com/signup?utm_source=tools&utm_medium=leads+by+likes&utm_campaign=leads+by+likes" 
               target="_blank" 
               rel="noopener noreferrer" 
               onClick={() => trackClick('footer_terms')}
@@ -180,7 +180,7 @@ const App: React.FC = () => {
             </a>
             <span>•</span>
             <a 
-              href="https://sbl.so" 
+              href="https://app.secondbrainlabs.com/signup?utm_source=tools&utm_medium=leads+by+likes&utm_campaign=leads+by+likes" 
               target="_blank" 
               rel="noopener noreferrer" 
               onClick={() => trackClick('footer_privacy')}
@@ -190,7 +190,7 @@ const App: React.FC = () => {
             </a>
             <span>•</span>
             <a 
-              href="https://sbl.so" 
+              href="https://app.secondbrainlabs.com/signup?utm_source=tools&utm_medium=leads+by+likes&utm_campaign=leads+by+likes" 
               target="_blank" 
               rel="noopener noreferrer" 
               onClick={() => trackClick('footer_explore')}
