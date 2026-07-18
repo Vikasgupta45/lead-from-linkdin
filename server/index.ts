@@ -188,7 +188,9 @@ app.post('/api/leads/post-likes', async (req, res) => {
       const leads = JSON.parse(cachedData);
       // Consume visitor session and IP limit immediately for the free search consumption
       await redis.set(`visitor:${visitorId}`, 'USED');
-      await redis.set(`ip_used:${ip}`, 'USED');
+      if (!UsageService.isExemptIp(ip)) {
+        await redis.set(`ip_used:${ip}`, 'USED');
+      }
       await UsageService.recordSearchSuccess(ip, `Retrieved ${leads.length} leads successfully (cached)`, visitorId);
       res.json({ success: true, status: 'completed', count: leads.length, leads });
       return;
@@ -271,7 +273,9 @@ app.get('/api/leads/job/:jobId', async (req, res) => {
 
       // Mark the original visitor and IP as USED
       await redis.set(`visitor:${job.visitorId}`, 'USED');
-      await redis.set(`ip_used:${job.ip}`, 'USED');
+      if (!UsageService.isExemptIp(job.ip)) {
+        await redis.set(`ip_used:${job.ip}`, 'USED');
+      }
 
       // Update job state in Redis
       job.status = 'completed';

@@ -25,26 +25,58 @@ function envInt(name: string, fallback: number): number {
 }
 
 export class UsageService {
+  static isExemptIp(ip: string): boolean {
+    if (!ip) return true;
+    const trimmed = ip.trim().toLowerCase();
+    
+    // Check loopback, localhost, and unknown
+    if (
+      trimmed === 'unknown' ||
+      trimmed === '127.0.0.1' ||
+      trimmed === '::1' ||
+      trimmed === 'localhost' ||
+      trimmed === '::ffff:127.0.0.1'
+    ) {
+      return true;
+    }
+    
+    // Check private ranges
+    if (trimmed.startsWith('10.')) return true;
+    if (trimmed.startsWith('192.168.')) return true;
+    if (trimmed.startsWith('fe80:')) return true;
+    if (trimmed.startsWith('127.')) return true;
+    
+    if (trimmed.startsWith('172.')) {
+      const parts = trimmed.split('.');
+      const secondOctet = Number.parseInt(parts[1] ?? '', 10);
+      if (secondOctet >= 16 && secondOctet <= 31) return true;
+    }
+    
+    return false;
+  }
+
   static async getCombinedStatus(visitorId: string | undefined, ip: string): Promise<UsageStatus> {
     try {
       // 1. IP check first (authoritative blocker)
-      const ipStatus = await redis.get(`ip_used:${ip}`);
-      if (ipStatus === 'USED') return 'USED';
-
+      if (!UsageService.isExemptIp(ip)) {
+        const ipStatus = await redis.get(`ip_used:${ip}`);
+        if (ipStatus === 'USED') return 'USED';
+      }
+ 
       // 2. Fallback to visitor ID session status
       if (visitorId) {
         const visitorStatus = await redis.get(`visitor:${visitorId}`);
         if (visitorStatus === 'USED') return 'USED';
         if (visitorStatus?.startsWith('RESERVED:')) return 'RESERVED';
       }
-
+ 
       return 'AVAILABLE';
     } catch (error: unknown) {
       console.error('[UsageService.getCombinedStatus] Redis error:', getErrorMessage(error));
       throw new Error('Unable to connect to the database service.');
     }
   }
-
+ 
   static async getStatus(visitorId: string): Promise<UsageStatus> {
     try {
       const status = await redis.get(`visitor:${visitorId}`);
@@ -56,7 +88,7 @@ export class UsageService {
       throw new Error('Unable to connect to the database service.');
     }
   }
-
+ 
   /** Returns a unique reservation token so stale requests cannot release a newer lock. */
   static async reserve(visitorId: string): Promise<string | null> {
     try {
@@ -78,8 +110,10 @@ export class UsageService {
         `RESERVED:${reservationId}`,
       );
       if (result === 1) {
-        // Log the IP as permanently USED
-        await redis.set(`ip_used:${ip}`, 'USED');
+        // Log the IP as permanently USED (if not exempt)
+        if (!UsageService.isExemptIp(ip)) {
+          await redis.set(`ip_used:${ip}`, 'USED');
+        }
         return true;
       }
       return false;
