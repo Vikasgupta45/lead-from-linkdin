@@ -173,10 +173,13 @@ app.post('/api/leads/post-likes', async (req, res) => {
       return;
     }
     if (currentStatus === 'RESERVED') {
-      const existingJobId = await redis.get(`post_job_url:${postUrl}`);
-      if (existingJobId) {
-        res.json({ success: true, status: 'processing', jobId: existingJobId });
-        return;
+      const visitorVal = await redis.get(`visitor:${visitorId}`);
+      if (visitorVal && visitorVal.startsWith('RESERVED:')) {
+        const jobId = visitorVal.substring(9);
+        if (jobId) {
+          res.json({ success: true, status: 'processing', jobId });
+          return;
+        }
       }
       res.status(429).json({ success: false, count: 0, leads: [], code: 'FREE_USAGE_PROCESSING', error: 'Your search is already being processed.' });
       return;
